@@ -8,12 +8,12 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        long clientTimestamp = Long.parseLong(message.getPayload());
-        long serverTimestamp = System.currentTimeMillis();
-        long latency = serverTimestamp - clientTimestamp;
+        long clientTime = Long.parseLong(message.getPayload());
+        long serverTime = System.currentTimeMillis();
+        long latency = serverTime - clientTime;
 
-        String jsonResponse = String.format("{\"clientTimestamp\":%d, \"serverTimestamp\":%d, \"latency\":%d}",
-                clientTimestamp, serverTimestamp, latency);
+        String jsonResponse = String.format("{\"clientTime\":%d, \"serverTime\":%d, \"latency\":%d}",
+                clientTime, serverTime, latency);
 
         session.sendMessage(new TextMessage(jsonResponse));
     }
