@@ -10,12 +10,11 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         long clientTimestamp = Long.parseLong(message.getPayload());
         long serverTimestamp = System.currentTimeMillis();
-
         long latency = serverTimestamp - clientTimestamp;
 
-        //TODO find smth for logging (Log4j)
-        System.out.println("Latency: " + latency);
+        String jsonResponse = String.format("{\"clientTimestamp\":%d, \"serverTimestamp\":%d, \"latency\":%d}",
+                clientTimestamp, serverTimestamp, latency);
 
-        session.sendMessage(new TextMessage("Echo: " + clientTimestamp));
+        session.sendMessage(new TextMessage(jsonResponse));
     }
 }

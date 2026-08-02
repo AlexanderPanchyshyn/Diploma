@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Latency Test</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <h1>Latency (WebSocket)</h1>
+
+    <div class="status-box">
+        <span>Connection status: </span>
+        <strong id="status" class="disconnected">Disconnected</strong>
+    </div>
+
+    <div class="controls">
+        <button id="connectBtn" onclick="connect()">Connect</button>
+        <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+        <button id="pingBtn" onclick="sendPing()" disabled>Send Ping</button>
+    </div>
+
+    <div class="metrics">
+        <div><strong>Client Timestamp (Sent):</strong> <span id="clientTime">--:--:--.--</span></div>
+        <div><strong>Server Timestamp (Received):</strong> <span id="serverTime">--:--:--.--</span></div>
+        <h3>Latency (Difference): <span id="latencyValue">--</span> ms</h3>
+    </div>
+
+    <h3>Logs:</h3>
+    <div id="log" class="log-window"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
