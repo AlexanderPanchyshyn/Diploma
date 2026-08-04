@@ -1,4 +1,4 @@
-import { BaseClient } from '../core/BaseClient.js';
+import { BaseClient } from '../../core/BaseClient.js';
 
 export class WebSocketService extends BaseClient {
     constructor(onStatusChange, onMetricsUpdate, onLog) {

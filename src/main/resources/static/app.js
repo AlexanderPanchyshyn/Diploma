@@ -1,5 +1,5 @@
-import { TabManager } from './js/core/TabManager.js';
-import { WebSocketTab } from './js/views/WebSocketTab.js';
+import { TabManager } from './core/TabManager.js';
+import { WebSocketTab } from './websocket/latency/WebSocketTab.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const tabManager = new TabManager('tab-content');
