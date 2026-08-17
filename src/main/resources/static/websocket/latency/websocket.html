@@ -17,6 +17,7 @@
                 <p><strong>Client Time:</strong> <span id="ws-client-time">---</span></p>
                 <p><strong>Server Time:</strong> <span id="ws-server-time">---</span></p>
                 <p><strong>Max Latency:</strong> <span id="ws-latency">0</span> ms</p>
+                <p><strong>Max Jitter:</strong> <span id="ws-jitter">0</span> ms</p>
             </div>
         </div>
         <div class="logs-section">
@@ -31,7 +32,14 @@
     <div class="chart-container">
         <h3>Latency Distribution Chart</h3>
         <div class="canvas-wrapper">
-            <canvas id="ws-chart"></canvas>
+            <canvas id="ws-latency-chart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <h3>Jitter Chart</h3>
+        <div class="canvas-wrapper">
+            <canvas id="ws-jitter-chart"></canvas>
         </div>
     </div>
 </div>

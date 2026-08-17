@@ -3,11 +3,13 @@ import {Controls} from './components/Controls.js';
 import {MetricsBox} from './components/MetricsBox.js';
 import {Logger} from './components/Logger.js';
 import {LatencyChart} from "./components/LatencyChart.js";
+import {JitterChart} from './components/JitterChart.js';
 
 export class WebSocketTab {
     constructor() {
         this.service = null;
-        this.chart = null;
+        this.latencyChart = null;
+        this.jitterChart = null;
         this.templateUrl = '/websocket/latency/websocket.html';
     }
 
@@ -17,16 +19,18 @@ export class WebSocketTab {
     }
 
     init() {
-        this.chart = new LatencyChart('ws-chart');
+        this.latencyChart = new LatencyChart('ws-latency-chart');
+        this.jitterChart = new JitterChart('ws-jitter-chart');
 
         const logger = new Logger('ws-log');
 
         const pingCountInput = document.getElementById('ws-ping-count');
 
         const metricsBox = new MetricsBox({
-            latencyId: 'ws-latency',
             clientTimeId: 'ws-client-time',
-            serverTimeId: 'ws-server-time'
+            serverTimeId: 'ws-server-time',
+            latencyId: 'ws-latency',
+            jitterId: 'ws-jitter'
         });
 
         const controls = new Controls(
@@ -37,7 +41,7 @@ export class WebSocketTab {
                 onPing: () => {
                     const count = parseInt(pingCountInput?.value || '1', 10);
 
-                    this.chart?.clear();
+                    this.latencyChart?.clear();
 
                     this.service?.sendPing(count)
                 }
@@ -48,7 +52,8 @@ export class WebSocketTab {
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
                 logger.clear();
-                this.chart?.clear();
+                this.latencyChart?.clear();
+                this.jitterChart?.clear();
             });
         }
 
@@ -57,9 +62,12 @@ export class WebSocketTab {
             metrics => {
                 metricsBox.update(metrics);
                 if (metrics.isLoading) {
-                    this.chart?.setLoading(true, metrics.receivedCount, metrics.total);
+                    this.latencyChart?.setLoading(true, metrics.receivedCount, metrics.total);
                 } else if (metrics.allLatencies) {
-                    this.chart?.setLatencies(metrics.allLatencies);
+                    this.latencyChart?.setLatencies(metrics.allLatencies);
+                    this.jitterChart?.setLatencies(metrics.allLatencies);
+
+                    this.setMaxJitter(metricsBox, metrics);
                 }
             },
             message => logger.log(message)
@@ -71,5 +79,22 @@ export class WebSocketTab {
             this.service.disconnect();
             this.service = null;
         }
+    }
+
+    setMaxJitter(metricsBox, metrics) {
+        let maxJitter = 0;
+        const latencies = metrics.allLatencies;
+
+        for (let i = 1; i < latencies.length; i++) {
+            const jitter = Math.abs(latencies[i] - latencies[i - 1]);
+            if (jitter > maxJitter) {
+                maxJitter = jitter;
+            }
+        }
+
+        metricsBox.update({
+            ...metrics,
+            jitter: maxJitter
+        });
     }
 }
