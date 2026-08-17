@@ -25,6 +25,8 @@ export class WebSocketService extends BaseClient {
         const host = window.location.host;
         this.socket = new WebSocket(`ws://${host}/websocket`);
 
+        this.batches = this.batches || {};
+
         this.socket.onopen = () => {
             this.onStatusChange(true);
             this.onLog('Successfully connected to WebSocket');
@@ -32,18 +34,57 @@ export class WebSocketService extends BaseClient {
 
         this.socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
+            const receiveTime = Date.now();
 
-            const clientFormatted = this.formatTime(data.clientTime);
-            const serverFormatted = this.formatTime(data.serverTime);
+            if (data.batchId) {
+                if (!this.batches[data.batchId]) {
+                    this.batches[data.batchId] = {
+                        receivedCount: 0,
+                        total: data.totalInBatch,
+                        startTime: data.clientTime,
+                        latencies: []
+                    };
+                }
 
-            this.onMetricsUpdate({
-                latency: data.latency,
-                clientTime: clientFormatted,
-                serverTime: serverFormatted
-            });
+                const batch = this.batches[data.batchId];
+                batch.receivedCount += 1;
+                batch.latencies.push(data.latency);
 
-            this.onLog(`Client: ${clientFormatted} | Server: ${serverFormatted} | Latency: ${data.latency} ms`);
-        };
+                if (this.onMetricsUpdate) {
+                    this.onMetricsUpdate({
+                        isLoading: true,
+                        receivedCount: batch.receivedCount,
+                        total: batch.total,
+                        clientTime: this.formatTime(data.clientTime),
+                        serverTime: this.formatTime(data.serverTime),
+                        latency: data.latency
+                    });
+                }
+
+                if (batch.receivedCount === batch.total) {
+                    const totalBatchDuration = receiveTime - batch.startTime;
+                    const avgLatency = Math.round(
+                        batch.latencies.reduce((a, b) => a + b, 0) / batch.total
+                    );
+
+                    this.onLog(`Sent: ${batch.total} pings | Total Batch Time: ${totalBatchDuration} ms | Avg Latency: ${avgLatency} ms`);
+
+                    if (this.onMetricsUpdate) {
+                        this.onMetricsUpdate({
+                            isLoading: false,
+                            allLatencies: batch.latencies,
+                            batchSize: batch.total,
+                            avgLatency: avgLatency,
+                            clientTime: this.formatTime(data.clientTime),
+                            serverTime: this.formatTime(data.serverTime),
+                            latency: data.latency
+                        });
+                    }
+
+                    delete this.batches[data.batchId];
+                }
+            }
+        }
 
         this.socket.onerror = (error) => {
             this.onLog('WebSocket Error: ' + error);
@@ -55,9 +96,20 @@ export class WebSocketService extends BaseClient {
         };
     }
 
-    sendPing() {
+    sendPing(count = 1) {
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-            this.socket.send(Date.now().toString());
+            const batchId = `batch-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+            const startTime = Date.now();
+
+            for (let i = 0; i < count; i++) {
+                const payload = JSON.stringify({
+                    batchId: batchId,
+                    seq: i + 1,
+                    totalInBatch: count,
+                    clientTime: startTime
+                });
+                this.socket.send(payload);
+            }
         }
     }
 

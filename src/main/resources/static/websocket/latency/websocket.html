@@ -1,23 +1,33 @@
 <div class="container">
-    <h2>Latency (WebSocket)</h2>
-
     <div class="controls-container">
         <button id="ws-connect">Connect</button>
         <button id="ws-disconnect" disabled>Disconnect</button>
         <button id="ws-ping" disabled>Send Ping</button>
+
+        <label for="ws-ping-count" style="margin-left: 10px;">Ping amount:</label>
+        <input type="number" id="ws-ping-count" value="1" min="1" max="1000000" style="width: 60px; padding: 5px;" />
     </div>
 
-    <div class="metrics-container">
-        <p><strong>Client Timestamp (Sent):</strong> <span id="ws-client-time">---</span></p>
-        <p><strong>Server Timestamp (Received):</strong> <span id="ws-server-time">---</span></p>
-        <p><strong>Latency (Difference):</strong> <span id="ws-latency">0</span> ms</p>
+    <div class="row-container">
+        <div class="metrics-section">
+            <div class="header">
+                <h3>Latest Calculation Data</h3>
+            </div>
+            <div class="metrics-container">
+                <p><strong>Client Time:</strong> <span id="ws-client-time">---</span></p>
+                <p><strong>Server Time:</strong> <span id="ws-server-time">---</span></p>
+                <p><strong>Max Latency:</strong> <span id="ws-latency">0</span> ms</p>
+            </div>
+        </div>
+        <div class="logs-section">
+            <div class="header">
+                <h3>Logs</h3>
+                <button id="ws-clear-logs" class="btn-clear">Clear Logs</button>
+            </div>
+            <div id="ws-log" class="log-container"></div>
+        </div>
     </div>
 
-    <div class="logs-header">
-        <h3>Logs:</h3>
-        <button id="ws-clear-logs" class="btn-clear">Clear Logs</button>
-    </div>
-    <div id="ws-log" class="log-container"></div>
     <div class="chart-container">
         <h3>Latency Distribution Chart</h3>
         <div class="canvas-wrapper">

@@ -21,6 +21,8 @@ export class WebSocketTab {
 
         const logger = new Logger('ws-log');
 
+        const pingCountInput = document.getElementById('ws-ping-count');
+
         const metricsBox = new MetricsBox({
             latencyId: 'ws-latency',
             clientTimeId: 'ws-client-time',
@@ -32,7 +34,13 @@ export class WebSocketTab {
             {
                 onConnect: () => this.service?.connect(),
                 onDisconnect: () => this.service?.disconnect(),
-                onPing: () => this.service?.sendPing()
+                onPing: () => {
+                    const count = parseInt(pingCountInput?.value || '1', 10);
+
+                    this.chart?.clear();
+
+                    this.service?.sendPing(count)
+                }
             }
         );
 
@@ -48,8 +56,10 @@ export class WebSocketTab {
             isConnected => controls.setConnectedState(isConnected),
             metrics => {
                 metricsBox.update(metrics);
-                if (metrics.latency !== undefined && !isNaN(metrics.latency)) {
-                    this.chart?.addValue(metrics.latency);
+                if (metrics.isLoading) {
+                    this.chart?.setLoading(true, metrics.receivedCount, metrics.total);
+                } else if (metrics.allLatencies) {
+                    this.chart?.setLatencies(metrics.allLatencies);
                 }
             },
             message => logger.log(message)
