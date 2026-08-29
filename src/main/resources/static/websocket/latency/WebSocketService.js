@@ -4,6 +4,13 @@ export class WebSocketService extends BaseClient {
     constructor(onStatusChange, onMetricsUpdate, onLog) {
         super(onStatusChange, onMetricsUpdate, onLog);
         this.socket = null;
+        this.isLossSimulationEnabled = false;
+        this.lossRate = 0;
+    }
+
+    setLossSimulation(enabled, rate) {
+        this.isLossSimulationEnabled = enabled;
+        this.lossRate = rate;
     }
 
     formatTime(timestamp) {
@@ -33,21 +40,42 @@ export class WebSocketService extends BaseClient {
         };
 
         this.socket.onmessage = (event) => {
+            const currentTime = Date.now();
             const data = JSON.parse(event.data);
-            const receiveTime = Date.now();
+
+            if (this.isLossSimulationEnabled && (Math.random() * 100 < this.lossRate)) {
+                if (this.batches[data.batchId]) {
+                    const batch = this.batches[data.batchId];
+                    batch.processedCount = (batch.processedCount || 0) + 1;
+
+                    if (this.onMetricsUpdate) {
+                        this.onMetricsUpdate({
+                            isLoading: true,
+                            receivedCount: batch.receivedCount,
+                            total: batch.total
+                        });
+                    }
+
+                    this.checkBatchCompletion(data.batchId, currentTime);
+                }
+                return;
+            }
 
             if (data.batchId) {
                 if (!this.batches[data.batchId]) {
                     this.batches[data.batchId] = {
                         receivedCount: 0,
+                        processedCount: 0,
                         total: data.totalInBatch,
                         startTime: data.clientTime,
-                        latencies: []
+                        latencies: [],
+                        timeoutId: null
                     };
                 }
 
                 const batch = this.batches[data.batchId];
                 batch.receivedCount += 1;
+                batch.processedCount = (batch.processedCount || 0) + 1;
                 batch.latencies.push(data.latency);
 
                 if (this.onMetricsUpdate) {
@@ -61,30 +89,9 @@ export class WebSocketService extends BaseClient {
                     });
                 }
 
-                if (batch.receivedCount === batch.total) {
-                    const totalBatchDuration = receiveTime - batch.startTime;
-                    const avgLatency = Math.round(
-                        batch.latencies.reduce((a, b) => a + b, 0) / batch.total
-                    );
-
-                    this.onLog(`Sent: ${batch.total} pings | Total Batch Time: ${totalBatchDuration} ms | Avg Latency: ${avgLatency} ms`);
-
-                    if (this.onMetricsUpdate) {
-                        this.onMetricsUpdate({
-                            isLoading: false,
-                            allLatencies: batch.latencies,
-                            batchSize: batch.total,
-                            avgLatency: avgLatency,
-                            clientTime: this.formatTime(data.clientTime),
-                            serverTime: this.formatTime(data.serverTime),
-                            latency: data.latency
-                        });
-                    }
-
-                    delete this.batches[data.batchId];
-                }
+                this.checkBatchCompletion(data.batchId, currentTime);
             }
-        }
+        };
 
         this.socket.onerror = (error) => {
             this.onLog('WebSocket Error: ' + error);
@@ -94,6 +101,45 @@ export class WebSocketService extends BaseClient {
             this.onStatusChange(false);
             this.onLog('Successfully disconnected from WebSocket');
         };
+    }
+
+    checkBatchCompletion(batchId, receiveTime) {
+        const batch = this.batches[batchId];
+        if (!batch) return;
+
+        if (batch.timeoutId) {
+            clearTimeout(batch.timeoutId);
+        }
+
+        const finalize = () => {
+            if (!this.batches[batchId]) return;
+
+            const totalBatchTime = receiveTime - batch.startTime;
+            const avgLatency = batch.latencies.length > 0
+                ? Math.round(batch.latencies.reduce((a, b) => a + b, 0) / batch.latencies.length)
+                : 0;
+
+            this.onLog(`Sent: ${batch.total} pings | Received: ${batch.receivedCount} | Total Batch Time: ${totalBatchTime} ms | Avg Latency: ${avgLatency} ms`);
+
+            if (this.onMetricsUpdate) {
+                this.onMetricsUpdate({
+                    isLoading: false,
+                    allLatencies: batch.latencies,
+                    batchSize: batch.total,
+                    receivedCount: batch.receivedCount,
+                    total: batch.total,
+                    avgLatency: avgLatency
+                });
+            }
+
+            delete this.batches[batchId];
+        };
+
+        if (batch.processedCount >= batch.total) {
+            finalize();
+        } else {
+            batch.timeoutId = setTimeout(finalize, 5000);
+        }
     }
 
     sendPing(count = 1) {

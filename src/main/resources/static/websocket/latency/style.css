@@ -106,3 +106,12 @@
     height: 100% !important;
     display: block;
 }
+
+.label {
+    margin-left: 15px;
+}
+
+.label-input {
+    width: 60px;
+    padding: 5px;
+}

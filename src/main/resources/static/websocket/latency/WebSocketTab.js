@@ -4,12 +4,14 @@ import {MetricsBox} from './components/MetricsBox.js';
 import {Logger} from './components/Logger.js';
 import {LatencyChart} from "./components/LatencyChart.js";
 import {JitterChart} from './components/JitterChart.js';
+import {PacketLossChart} from './components/PacketLossChart.js';
 
 export class WebSocketTab {
     constructor() {
         this.service = null;
         this.latencyChart = null;
         this.jitterChart = null;
+        this.packetLossChart = null;
         this.templateUrl = '/websocket/latency/websocket.html';
     }
 
@@ -21,16 +23,30 @@ export class WebSocketTab {
     init() {
         this.latencyChart = new LatencyChart('ws-latency-chart');
         this.jitterChart = new JitterChart('ws-jitter-chart');
+        this.packetLossChart = new PacketLossChart('ws-packet-loss-chart');
 
         const logger = new Logger('ws-log');
 
         const pingCountInput = document.getElementById('ws-ping-count');
 
+        const lossCheckbox = document.getElementById('ws-simulate-loss');
+        const lossInput = document.getElementById('ws-loss-rate');
+
+        const updateLossSettings = () => {
+            const enabled = lossCheckbox.checked;
+            const rate = parseFloat(lossInput.value) || 0;
+            this.service?.setLossSimulation(enabled, rate);
+        };
+
+        lossCheckbox.addEventListener('change', updateLossSettings);
+        lossInput.addEventListener('input', updateLossSettings);
+
         const metricsBox = new MetricsBox({
             clientTimeId: 'ws-client-time',
             serverTimeId: 'ws-server-time',
             latencyId: 'ws-latency',
-            jitterId: 'ws-jitter'
+            jitterId: 'ws-jitter',
+            packetLossId: 'ws-packet-loss',
         });
 
         const controls = new Controls(
@@ -54,6 +70,7 @@ export class WebSocketTab {
                 logger.clear();
                 this.latencyChart?.clear();
                 this.jitterChart?.clear();
+                this.packetLossChart?.clear();
             });
         }
 
@@ -61,6 +78,11 @@ export class WebSocketTab {
             isConnected => controls.setConnectedState(isConnected),
             metrics => {
                 metricsBox.update(metrics);
+
+                if (metrics.total && metrics.receivedCount !== undefined) {
+                    this.packetLossChart?.setStats(metrics.total, metrics.receivedCount);
+                }
+
                 if (metrics.isLoading) {
                     this.latencyChart?.setLoading(true, metrics.receivedCount, metrics.total);
                 } else if (metrics.allLatencies) {

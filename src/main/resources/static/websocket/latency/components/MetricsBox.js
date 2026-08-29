@@ -1,9 +1,10 @@
 export class MetricsBox {
-    constructor({ clientTimeId, serverTimeId, latencyId, jitterId }) {
+    constructor({ clientTimeId, serverTimeId, latencyId, jitterId, packetLossId }) {
         this.clientTimeEl = document.getElementById(clientTimeId);
         this.serverTimeEl = document.getElementById(serverTimeId);
         this.latencyEl = document.getElementById(latencyId);
         this.jitterEl = document.getElementById(jitterId);
+        this.packetLossEl = document.getElementById(packetLossId);
     }
 
     update(data) {
@@ -18,6 +19,12 @@ export class MetricsBox {
         }
         if (this.jitterEl && data.jitter !== undefined) {
             this.jitterEl.textContent = data.jitter;
+        }
+
+        if (this.packetLossEl && data.total && data.receivedCount !== undefined) {
+            const lost = data.total - data.receivedCount;
+            const percentage = ((lost / data.total) * 100).toFixed(2);
+            this.packetLossEl.textContent = `${lost.toLocaleString()} (${percentage}%)`;
         }
     }
 }

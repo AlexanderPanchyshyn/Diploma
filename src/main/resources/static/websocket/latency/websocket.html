@@ -4,8 +4,12 @@
         <button id="ws-disconnect" disabled>Disconnect</button>
         <button id="ws-ping" disabled>Send Ping</button>
 
-        <label for="ws-ping-count" style="margin-left: 10px;">Ping amount:</label>
-        <input type="number" id="ws-ping-count" value="1" min="1" max="1000000" style="width: 60px; padding: 5px;" />
+        <label for="ws-ping-count" class="label">Ping amount:</label>
+        <input type="number" id="ws-ping-count" value="1" min="1" max="1000000" class="label-input"/>
+        <label class="label">
+            <input type="checkbox" id="ws-simulate-loss"/> Simulate Packet Loss (%):
+        </label>
+        <input type="number" id="ws-loss-rate" value="1" min="1" max="100" class="label-input" placeholder="%"/>
     </div>
 
     <div class="row-container">
@@ -18,6 +22,7 @@
                 <p><strong>Server Time:</strong> <span id="ws-server-time">---</span></p>
                 <p><strong>Max Latency:</strong> <span id="ws-latency">0</span> ms</p>
                 <p><strong>Max Jitter:</strong> <span id="ws-jitter">0</span> ms</p>
+                <p><strong>Packet Loss Amount:</strong> <span id="ws-packet-loss">0 (0%)</span></p>
             </div>
         </div>
         <div class="logs-section">
@@ -30,7 +35,7 @@
     </div>
 
     <div class="chart-container">
-        <h3>Latency Distribution Chart</h3>
+        <h3>Latency Chart</h3>
         <div class="canvas-wrapper">
             <canvas id="ws-latency-chart"></canvas>
         </div>
@@ -40,6 +45,13 @@
         <h3>Jitter Chart</h3>
         <div class="canvas-wrapper">
             <canvas id="ws-jitter-chart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <h3>Packet Loss Chart</h3>
+        <div class="canvas-wrapper">
+            <canvas id="ws-packet-loss-chart"></canvas>
         </div>
     </div>
 </div>
