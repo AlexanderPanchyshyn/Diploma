@@ -1,10 +1,10 @@
 import {WebSocketService} from './WebSocketService.js';
-import {Controls} from './components/Controls.js';
-import {MetricsBox} from './components/MetricsBox.js';
-import {Logger} from './components/Logger.js';
-import {LatencyChart} from "./components/LatencyChart.js";
-import {JitterChart} from './components/JitterChart.js';
-import {PacketLossChart} from './components/PacketLossChart.js';
+import {Controls} from '../components/Controls.js';
+import {MetricsBox} from '../components/MetricsBox.js';
+import {Logger} from '../components/Logger.js';
+import {LatencyChart} from "../components/LatencyChart.js";
+import {JitterChart} from '../components/JitterChart.js';
+import {PacketLossChart} from '../components/PacketLossChart.js';
 
 export class WebSocketTab {
     constructor() {
@@ -12,7 +12,7 @@ export class WebSocketTab {
         this.latencyChart = null;
         this.jitterChart = null;
         this.packetLossChart = null;
-        this.templateUrl = '/websocket/latency/websocket.html';
+        this.templateUrl = '/template/template.html';
     }
 
     async render() {
@@ -28,7 +28,6 @@ export class WebSocketTab {
         const logger = new Logger('ws-log');
 
         const pingCountInput = document.getElementById('ws-ping-count');
-
         const lossCheckbox = document.getElementById('ws-simulate-loss');
         const lossInput = document.getElementById('ws-loss-rate');
 
@@ -58,6 +57,8 @@ export class WebSocketTab {
                     const count = parseInt(pingCountInput?.value || '1', 10);
 
                     this.latencyChart?.clear();
+                    this.jitterChart?.clear();
+                    this.packetLossChart?.clear();
 
                     this.service?.sendPing(count)
                 }
@@ -114,9 +115,6 @@ export class WebSocketTab {
             }
         }
 
-        metricsBox.update({
-            ...metrics,
-            jitter: maxJitter
-        });
+        metricsBox.update({...metrics, jitter: maxJitter});
     }
 }

@@ -1,11 +1,12 @@
 import { TabManager } from './core/TabManager.js';
-import { WebSocketTab } from './websocket/latency/WebSocketTab.js';
+import { WebSocketTab } from './websocket/WebSocketTab.js';
+import { SseTab } from "./sse/SseTab.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
     const tabManager = new TabManager('tab-content');
 
     tabManager.registerTab('websocket', new WebSocketTab());
-    // tabManager.registerTab('sse', new SseTab());
+    tabManager.registerTab('sse', new SseTab());
     // tabManager.registerTab('webrtc', new WebRtcTab());
     // tabManager.registerTab('webtransport', new WebTransportTab());
 
