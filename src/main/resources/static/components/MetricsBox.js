@@ -8,17 +8,17 @@ export class MetricsBox {
     }
 
     update(data) {
-        if (this.clientTimeEl && data.clientTime) {
+        if (this.clientTimeEl && data.clientTime !== undefined) {
             this.clientTimeEl.textContent = data.clientTime;
         }
-        if (this.serverTimeEl && data.serverTime) {
+        if (this.serverTimeEl && data.serverTime !== undefined) {
             this.serverTimeEl.textContent = data.serverTime;
         }
         if (this.latencyEl && data.latency !== undefined) {
             this.latencyEl.textContent = data.latency;
         }
-        if (this.jitterEl && data.jitter !== undefined) {
-            this.jitterEl.textContent = data.jitter;
+        if (this.jitterEl && data.maxJitter !== undefined) {
+            this.jitterEl.textContent = data.maxJitter;
         }
 
         if (this.packetLossEl && data.total && data.receivedCount !== undefined) {
