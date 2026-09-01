@@ -1,5 +1,6 @@
 package com.uj.diploma.handlers;
 
+import com.uj.diploma.dtos.WebSocketMessageDto;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -13,7 +14,6 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         long serverTime = System.currentTimeMillis();
-
         JsonNode jsonNode = objectMapper.readTree(message.getPayload());
 
         long clientTime = jsonNode.get("clientTime").asLong();
@@ -21,13 +21,10 @@ public class CustomWebSocketHandler extends TextWebSocketHandler {
         int seq = jsonNode.has("seq") ? jsonNode.get("seq").asInt() : 1;
         int totalInBatch = jsonNode.has("totalInBatch") ? jsonNode.get("totalInBatch").asInt() : 1;
 
-        long latency = serverTime - clientTime;
+        long latency = Math.max(serverTime - clientTime, 0);
 
-        String jsonResponse = String.format(
-                "{\"batchId\":\"%s\", \"seq\":%d, \"totalInBatch\":%d, \"clientTime\":%d, \"serverTime\":%d, \"latency\":%d}",
-                batchId, seq, totalInBatch, clientTime, serverTime, latency
-        );
+        WebSocketMessageDto responseDto = new WebSocketMessageDto(batchId, seq, totalInBatch, clientTime, serverTime, latency);
 
-        session.sendMessage(new TextMessage(jsonResponse));
+        session.sendMessage(new TextMessage(objectMapper.writeValueAsString(responseDto)));
     }
 }

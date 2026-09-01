@@ -1,13 +1,14 @@
 import { TabManager } from './core/TabManager.js';
 import { WebSocketTab } from './websocket/WebSocketTab.js';
 import { SseTab } from "./sse/SseTab.js";
+import { WebRtcTab } from "./webRtc/WebRtcTab.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
     const tabManager = new TabManager('tab-content');
 
     tabManager.registerTab('websocket', new WebSocketTab());
     tabManager.registerTab('sse', new SseTab());
-    // tabManager.registerTab('webrtc', new WebRtcTab());
+    tabManager.registerTab('webrtc', new WebRtcTab());
     // tabManager.registerTab('webtransport', new WebTransportTab());
 
     const navTabs = document.querySelectorAll('.tab-btn');
