@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     tabManager.registerTab('websocket', new WebSocketTab());
     tabManager.registerTab('sse', new SseTab());
     tabManager.registerTab('webrtc', new WebRtcTab());
-    // tabManager.registerTab('webtransport', new WebTransportTab());
 
     const navTabs = document.querySelectorAll('.tab-btn');
 
