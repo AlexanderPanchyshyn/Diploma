@@ -1,4 +1,4 @@
-export class BaseClient {
+export class BaseService {
     constructor(onStatusChange, onMetricsUpdate, onLog) {
         this.onStatusChange = onStatusChange;
         this.onMetricsUpdate = onMetricsUpdate;

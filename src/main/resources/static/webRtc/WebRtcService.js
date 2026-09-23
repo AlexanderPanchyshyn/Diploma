@@ -1,6 +1,6 @@
-import { BaseClient } from '../core/BaseClient.js';
+import { BaseService } from '../core/BaseService.js';
 
-export class WebRtcService extends BaseClient {
+export class WebRtcService extends BaseService {
     constructor(onStatusChange, onMetricsUpdate, onLog) {
         super(onStatusChange, onMetricsUpdate, onLog);
         this.peerConnection = null;

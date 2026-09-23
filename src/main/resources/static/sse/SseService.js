@@ -1,6 +1,6 @@
-import { BaseClient } from '../core/BaseClient.js';
+import { BaseService } from '../core/BaseService.js';
 
-export class SseService extends BaseClient {
+export class SseService extends BaseService {
     constructor(onStatusChange, onMetricsUpdate, onLog) {
         super(onStatusChange, onMetricsUpdate, onLog);
     }
